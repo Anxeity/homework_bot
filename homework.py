@@ -74,7 +74,7 @@ def get_api_answer(current_timestamp):
 
 
 def check_response(response):
-    """Проверяет ответ API на корректность """
+    """Проверяет ответ API на корректность."""
     try:
         homeworks_list = response['homeworks']
     except KeyError:
@@ -90,7 +90,7 @@ def check_response(response):
 
 
 def parse_status(homework):
-    """Извлекает статус домашней работы"""
+    """Извлекает статус домашней работы."""
     if 'homework_name' not in homework:
         message = 'Нет ключа homework_name в API'
         logger.error(message)
