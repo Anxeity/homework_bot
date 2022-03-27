@@ -67,7 +67,7 @@ def get_api_answer(current_timestamp):
         logger.error(message)
         raise Exception(message)
     if homework_statuses.status_code != HTTPStatus.OK:
-        messagest = f'Статус код не 200'
+        messagest = 'Статус код не 200'
         logger.error(messagest)
         raise exceptions.NegativeApiStatus(messagest)
     return homework_statuses.json()
@@ -78,7 +78,7 @@ def check_response(response):
     try:
         homeworks_list = response['homeworks']
     except KeyError:
-        message = f'API отсутсвуют ключ homeworks'
+        message = 'API отсутсвуют ключ homeworks'
         logger.error(message)
         raise KeyError(message)
     if not isinstance(homeworks_list, list):
