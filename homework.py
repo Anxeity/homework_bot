@@ -2,11 +2,16 @@ import logging
 import os
 import sys
 import time
+import json
 
 import requests
 import telegram
-import exceptions
 from dotenv import load_dotenv
+
+
+import exceptions
+
+
 from http import HTTPStatus
 
 
@@ -45,7 +50,7 @@ def send_message(bot, message):
     """Функция отправляет сообщения в Телеграм."""
     try:
         bot.send_message(chat_id=TELEGRAM_CHAT_ID, text=message)
-    except exceptions.TrySendMessageError as error:
+    except telegram.TelegramError as error:
         logger.error(
             f'Ошибка при отправке сообщения: {error}')
     else:
@@ -62,30 +67,35 @@ def get_api_answer(current_timestamp):
             headers=HEADERS,
             params=params
         )
-    except Exception as error:
+    except requests.exceptions.RequestException as error:
         message = f'Запрос не отправлен: {error}'
         logger.error(message)
-        raise Exception(message)
+        raise exceptions.RequestError(message)
     if homework_statuses.status_code != HTTPStatus.OK:
         messagest = 'Статус код не 200'
         logger.error(messagest)
         raise exceptions.NegativeApiStatus(messagest)
-    return homework_statuses.json()
+    try:
+        return homework_statuses.json()
+    except json.decoder.JSONDecodeError:
+        messagejs = 'Ошибка JSON'
+        logger.error(messagejs)
+        raise ValueError(messagejs)
 
 
 def check_response(response):
     """Проверяет ответ API на корректность."""
     try:
-        homeworks_list = response['homeworks']
+        homeworks = response['homeworks']
     except KeyError:
         message = 'API отсутсвуют ключ homeworks'
         logger.error(message)
         raise KeyError(message)
-    if not isinstance(homeworks_list, list):
+    if not isinstance(homeworks, list):
         message = 'Перечень домашки не является списком'
         logger.error(message)
         raise exceptions.HomeWorkIsNotList(message)
-    homework = homeworks_list[0]
+    homework = homeworks[0]
     return homework
 
 
@@ -121,7 +131,7 @@ def check_tokens():
 
 def main():
     """Основная логика работы бота."""
-    if check_tokens() is False:
+    if not check_tokens():
         raise KeyError('Отсутствуют обязательные переменные окружения')
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
     current_timestamp = int(time.time())
@@ -130,7 +140,6 @@ def main():
             response = get_api_answer(current_timestamp)
             homework = check_response(response)
             message = parse_status(homework)
-            print(message)
             send_message(bot, message)
             current_timestamp = response.get('current_date')
             time.sleep(RETRY_TIME)
