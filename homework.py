@@ -135,12 +135,16 @@ def main():
         raise KeyError('Отсутствуют обязательные переменные окружения')
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
     current_timestamp = int(time.time())
+    last_homework = 0
     while True:
         try:
             response = get_api_answer(current_timestamp)
             homework = check_response(response)
-            message = parse_status(homework)
-            send_message(bot, message)
+            if homework != last_homework:
+                last_homework = homework
+                homework = check_response(response)
+                message = parse_status(homework)
+                send_message(bot, message)
             current_timestamp = response.get('current_date')
             time.sleep(RETRY_TIME)
         except Exception as error:
