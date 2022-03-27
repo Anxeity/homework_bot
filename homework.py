@@ -56,7 +56,7 @@ def send_message(bot, message):
 def get_api_answer(current_timestamp):
     """Функция отправляет запрос к апи."""
     timestamp = current_timestamp or int(time.time())
-    params = {'from_date': timestamp }
+    params = {'from_date': timestamp}
     try:
         homework_statuses = requests.get(
             ENDPOINT,
