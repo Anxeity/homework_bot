@@ -95,8 +95,10 @@ def check_response(response):
         message = 'Перечень домашки не является списком'
         logger.error(message)
         raise exceptions.HomeWorkIsNotList(message)
-    homework = homeworks[0]
-    return homework
+    if len(homeworks) == 0:
+        message = 'Вы ничего не отправляли на ревью'
+        logger.error(message)
+    return homeworks[0]
 
 
 def parse_status(homework):
