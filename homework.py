@@ -1,4 +1,3 @@
-from email import message
 import logging
 import os
 import sys
