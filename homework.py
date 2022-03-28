@@ -1,8 +1,9 @@
-import logging
 import os
 import sys
 import time
 import json
+import logging
+from http import HTTPStatus
 
 import requests
 import telegram
@@ -10,9 +11,6 @@ from dotenv import load_dotenv
 
 
 import exceptions
-
-
-from http import HTTPStatus
 
 
 load_dotenv()
@@ -98,7 +96,7 @@ def check_response(response):
     if len(homeworks) == 0:
         message = 'Вы ничего не отправляли на ревью'
         logger.error(message)
-    return homeworks[0]
+    return homeworks
 
 
 def parse_status(homework):
@@ -141,13 +139,15 @@ def main():
     while True:
         try:
             response = get_api_answer(current_timestamp)
+            print(response)
             homework = check_response(response)
+            print(homework)
             if homework != last_homework:
                 last_homework = homework
-                homework = check_response(response)
-                message = parse_status(homework)
+                message = parse_status(homework[0])
                 send_message(bot, message)
             current_timestamp = response.get('current_date')
+            print(message)
             time.sleep(RETRY_TIME)
         except Exception as error:
             message = f'Сбой в работе программы: {error}'
